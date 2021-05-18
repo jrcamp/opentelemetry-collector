@@ -20,7 +20,7 @@ import (
 
 // ErrIncompatibleType details a type conversion error during translation.
 type ErrIncompatibleType struct {
-	given interface{}
+	given    interface{}
 	expected interface{}
 }
 

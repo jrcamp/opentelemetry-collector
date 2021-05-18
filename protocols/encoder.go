@@ -16,8 +16,8 @@ package protocols
 
 import (
 	"go.opentelemetry.io/collector/consumer/pdata"
-	"go.opentelemetry.io/collector/protocols/models"
 	"go.opentelemetry.io/collector/protocols/bytes"
+	"go.opentelemetry.io/collector/protocols/models"
 )
 
 type MetricsEncoder struct {
