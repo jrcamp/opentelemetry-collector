@@ -12,52 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "TelemetryType=Metrics,Traces,Logs"
+
 package protocols
 
 import (
+	"github.com/cheekybits/genny/generic"
 	"go.opentelemetry.io/collector/consumer/pdata"
 	"go.opentelemetry.io/collector/protocols/bytes"
 	"go.opentelemetry.io/collector/protocols/models"
 )
 
-type MetricsDecoder struct {
-	mod models.MetricsDecoder
-	enc bytes.MetricsDecoder
+type TelemetryType generic.Type
+
+type TelemetryTypeDecoder struct {
+	mod models.TelemetryTypeDecoder
+	enc bytes.TelemetryTypeDecoder
 }
 
-type TracesDecoder struct {
-	mod models.TracesDecoder
-	enc bytes.TracesDecoder
-}
-
-type LogsDecoder struct {
-	mod models.LogsDecoder
-	enc bytes.LogsDecoder
-}
-
-// DecodeMetrics decodes bytes to pdata.
-func (t *MetricsDecoder) DecodeMetrics(data []byte) (pdata.Metrics, error) {
-	model, err := t.enc.DecodeMetrics(data)
+// DecodeTelemetryType decodes bytes to pdata.
+func (t *TelemetryTypeDecoder) DecodeTelemetryType(data []byte) (pdata.TelemetryType, error) {
+	model, err := t.enc.DecodeTelemetryType(data)
 	if err != nil {
-		return pdata.NewMetrics(), err
+		return pdata.NewTelemetryType(), err
 	}
-	return t.mod.ToMetrics(model)
-}
-
-// DecodeTraces decodes bytes to pdata.
-func (t *TracesDecoder) DecodeTraces(data []byte) (pdata.Traces, error) {
-	model, err := t.enc.DecodeTraces(data)
-	if err != nil {
-		return pdata.NewTraces(), err
-	}
-	return t.mod.ToTraces(model)
-}
-
-// DecodeLogs decodes bytes to pdata.
-func (t *LogsDecoder) DecodeLogs(data []byte) (pdata.Logs, error) {
-	model, err := t.enc.DecodeLogs(data)
-	if err != nil {
-		return pdata.NewLogs(), err
-	}
-	return t.mod.ToLogs(model)
+	return t.mod.ToTelemetryType(model)
 }

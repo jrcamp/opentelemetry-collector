@@ -12,27 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "TelemetryType=Metrics,Traces,Logs"
+
 package models
 
 import "go.opentelemetry.io/collector/consumer/pdata"
 
-type MetricsEncoder interface {
-	// FromMetrics converts pdata to data model.
-	FromMetrics(md pdata.Metrics, out interface{}) error
-	// Type returns an instance of the model.
-	Type() interface{}
-}
-
-type TracesEncoder interface {
-	// FromTraces converts pdata to data model.
-	FromTraces(md pdata.Traces, out interface{}) error
-	// Type returns an instance of the model.
-	Type() interface{}
-}
-
-type LogsEncoder interface {
-	// FromLogs converts pdata to data model.
-	FromLogs(md pdata.Logs, out interface{}) error
+type TelemetryTypeEncoder interface {
+	// FromTelemetryType converts pdata to data model.
+	FromTelemetryType(md pdata.TelemetryType, out interface{}) error
 	// Type returns an instance of the model.
 	Type() interface{}
 }

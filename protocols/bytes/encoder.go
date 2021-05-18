@@ -12,19 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "TelemetryType=Metrics,Traces,Logs"
+
 package bytes
 
-// MetricsEncoder encodes data model into bytes.
-type MetricsEncoder interface {
-	EncodeMetrics(model interface{}) ([]byte, error)
-}
-
-// TracesEncoder encodes data model into bytes.
-type TracesEncoder interface {
-	EncodeTraces(model interface{}) ([]byte, error)
-}
-
-// LogsEncoder encodes data model into bytes.
-type LogsEncoder interface {
-	EncodeLogs(model interface{}) ([]byte, error)
+// TelemetryTypeEncoder encodes data model into bytes.
+type TelemetryTypeEncoder interface {
+	EncodeTelemetryType(model interface{}) ([]byte, error)
 }

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "TelemetryType=Metrics,Traces,Logs"
+
 package protocols
 
 import (
@@ -20,44 +22,16 @@ import (
 	"go.opentelemetry.io/collector/protocols/models"
 )
 
-type MetricsEncoder struct {
-	mod models.MetricsEncoder
-	enc bytes.MetricsEncoder
+type TelemetryTypeEncoder struct {
+	mod models.TelemetryTypeEncoder
+	enc bytes.TelemetryTypeEncoder
 }
 
-type TracesEncoder struct {
-	mod models.TracesEncoder
-	enc bytes.TracesEncoder
-}
-
-type LogsEncoder struct {
-	mod models.LogsEncoder
-	enc bytes.LogsEncoder
-}
-
-// EncodeMetrics encodes pdata to bytes.
-func (t *MetricsEncoder) EncodeMetrics(td pdata.Metrics) ([]byte, error) {
+// EncodeT encodes pdata to bytes.
+func (t *TelemetryTypeEncoder) EncodeT(td pdata.TelemetryType) ([]byte, error) {
 	out := t.mod.Type()
-	if err := t.mod.FromMetrics(td, &out); err != nil {
+	if err := t.mod.FromTelemetryType(td, &out); err != nil {
 		return nil, err
 	}
-	return t.enc.EncodeMetrics(out)
-}
-
-// EncodeTraces encodes pdata to bytes.
-func (t *TracesEncoder) EncodeTraces(td pdata.Traces) ([]byte, error) {
-	out := t.mod.Type()
-	if err := t.mod.FromTraces(td, &out); err != nil {
-		return nil, err
-	}
-	return t.enc.EncodeTraces(out)
-}
-
-// EncodeLogs encodes pdata to bytes.
-func (t *LogsEncoder) EncodeLogs(td pdata.Logs) ([]byte, error) {
-	out := t.mod.Type()
-	if err := t.mod.FromLogs(td, &out); err != nil {
-		return nil, err
-	}
-	return t.enc.EncodeLogs(out)
+	return t.enc.EncodeTelemetryType(out)
 }

@@ -10,6 +10,7 @@ require (
 	github.com/apache/thrift v0.13.0
 	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/census-instrumentation/opencensus-proto v0.3.0
+	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/structtag v1.2.0
 	github.com/go-kit/kit v0.10.0
