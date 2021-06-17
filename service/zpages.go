@@ -16,7 +16,6 @@ package service
 
 import (
 	"net/http"
-	"path"
 	"sort"
 
 	"go.opentelemetry.io/collector/component"
@@ -31,10 +30,10 @@ const (
 	zExtensionName = "zextensionname"
 )
 
-func (srv *service) RegisterZPages(mux *http.ServeMux, pathPrefix string) {
-	mux.HandleFunc(path.Join(pathPrefix, servicezPath), srv.handleServicezRequest)
-	mux.HandleFunc(path.Join(pathPrefix, pipelinezPath), srv.handlePipelinezRequest)
-	mux.HandleFunc(path.Join(pathPrefix, extensionzPath), func(w http.ResponseWriter, r *http.Request) {
+func (srv *service) RegisterDebug(mux *http.ServeMux) {
+	mux.HandleFunc("/"+servicezPath, srv.handleServicezRequest)
+	mux.HandleFunc("/"+pipelinezPath, srv.handlePipelinezRequest)
+	mux.HandleFunc("/"+extensionzPath, func(w http.ResponseWriter, r *http.Request) {
 		handleExtensionzRequest(srv, w, r)
 	})
 }

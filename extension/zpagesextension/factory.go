@@ -55,5 +55,5 @@ func createExtension(_ context.Context, set component.ExtensionCreateSettings, c
 		return nil, errors.New("\"endpoint\" is required when using the \"zpages\" extension")
 	}
 
-	return newServer(*config, set.Logger), nil
+	return newServer(), nil
 }

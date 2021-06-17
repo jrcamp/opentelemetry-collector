@@ -36,7 +36,7 @@ func TestZPagesExtensionUsage(t *testing.T) {
 		},
 	}
 
-	zpagesExt := newServer(config, zap.NewNop())
+	zpagesExt := newServer()
 	require.NotNil(t, zpagesExt)
 
 	require.NoError(t, zpagesExt.Start(context.Background(), componenttest.NewNopHost()))
@@ -67,7 +67,7 @@ func TestZPagesExtensionPortAlreadyInUse(t *testing.T) {
 			Endpoint: endpoint,
 		},
 	}
-	zpagesExt := newServer(config, zap.NewNop())
+	zpagesExt := newServer()
 	require.NotNil(t, zpagesExt)
 
 	require.Error(t, zpagesExt.Start(context.Background(), componenttest.NewNopHost()))
@@ -80,7 +80,7 @@ func TestZPagesMultipleStarts(t *testing.T) {
 		},
 	}
 
-	zpagesExt := newServer(config, zap.NewNop())
+	zpagesExt := newServer()
 	require.NotNil(t, zpagesExt)
 
 	require.NoError(t, zpagesExt.Start(context.Background(), componenttest.NewNopHost()))
@@ -97,7 +97,7 @@ func TestZPagesMultipleShutdowns(t *testing.T) {
 		},
 	}
 
-	zpagesExt := newServer(config, zap.NewNop())
+	zpagesExt := newServer()
 	require.NotNil(t, zpagesExt)
 
 	require.NoError(t, zpagesExt.Start(context.Background(), componenttest.NewNopHost()))
@@ -112,7 +112,7 @@ func TestZPagesShutdownWithoutStart(t *testing.T) {
 		},
 	}
 
-	zpagesExt := newServer(config, zap.NewNop())
+	zpagesExt := newServer()
 	require.NotNil(t, zpagesExt)
 
 	require.NoError(t, zpagesExt.Shutdown(context.Background()))

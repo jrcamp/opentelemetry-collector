@@ -112,6 +112,7 @@ func New(set CollectorSettings) (*Collector, error) {
 		telemetry.Flags,
 		builder.Flags,
 		loggerFlags,
+		statusFlags,
 	}
 	for _, addFlags := range addFlagsFns {
 		addFlags(flagSet)

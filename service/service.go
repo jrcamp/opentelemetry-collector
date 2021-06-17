@@ -17,6 +17,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"go.uber.org/zap"
 
@@ -33,6 +34,7 @@ type service struct {
 	config            *config.Config
 	logger            *zap.Logger
 	asyncErrorChannel chan error
+	status *status
 
 	builtExporters  builder.Exporters
 	builtReceivers  builder.Receivers
@@ -51,6 +53,10 @@ func newService(set *svcSettings) (*service, error) {
 
 	if err := srv.config.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %w", err)
+	}
+
+	if statusAddr != nil && *statusAddr != "" {
+		srv.status = newStatusServer(set.Logger, *statusAddr, srv)
 	}
 
 	if err := srv.buildExtensions(); err != nil {
@@ -73,12 +79,39 @@ func (srv *service) Start(ctx context.Context) error {
 		return fmt.Errorf("cannot setup pipelines: %w", err)
 	}
 
+	if srv.status != nil {
+		debugMux := http.NewServeMux()
+
+		for component, extension := range srv.builtExtensions.ToMap() {
+			if handler, ok := extension.(registerDebug); ok {
+				srv.logger.Info("Registering component to debug mux", zap.Stringer("component", component))
+				handler.RegisterDebug(debugMux)
+			}
+		}
+
+		srv.RegisterDebug(debugMux)
+
+		mux := http.NewServeMux()
+		mux.Handle("/debug/", http.StripPrefix("/debug", debugMux))
+
+		if err := srv.status.start(mux); err != nil {
+			return err
+		}
+	}
+
 	return srv.builtExtensions.NotifyPipelineReady()
 }
 
 func (srv *service) Shutdown(ctx context.Context) error {
 	// Accumulate errors and proceed with shutting down remaining components.
 	var errs []error
+
+	if srv.status != nil {
+		srv.logger.Info("Shutting down HTTP status server...")
+		if err := srv.status.shutdown(); err != nil {
+			errs = append(errs, fmt.Errorf("failed shutting down HTTP status server: %w", err))
+		}
+	}
 
 	if err := srv.builtExtensions.NotifyPipelineNotReady(); err != nil {
 		errs = append(errs, fmt.Errorf("failed to notify that pipeline is not ready: %w", err))

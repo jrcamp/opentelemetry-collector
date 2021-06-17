@@ -19,64 +19,25 @@ import (
 	"net/http"
 
 	"go.opencensus.io/zpages"
-	"go.uber.org/zap"
 
 	"go.opentelemetry.io/collector/component"
 )
 
 type zpagesExtension struct {
-	config Config
-	logger *zap.Logger
-	server http.Server
-	stopCh chan struct{}
 }
 
-func (zpe *zpagesExtension) Start(_ context.Context, host component.Host) error {
-	zPagesMux := http.NewServeMux()
-	zpages.Handle(zPagesMux, "/debug")
-
-	hostZPages, ok := host.(interface {
-		RegisterZPages(mux *http.ServeMux, pathPrefix string)
-	})
-	if ok {
-		zpe.logger.Info("Register Host's zPages")
-		hostZPages.RegisterZPages(zPagesMux, "/debug")
-	} else {
-		zpe.logger.Info("Host's zPages not available")
-	}
-
-	// Start the listener here so we can have earlier failure if port is
-	// already in use.
-	ln, err := zpe.config.TCPAddr.Listen()
-	if err != nil {
-		return err
-	}
-
-	zpe.logger.Info("Starting zPages extension", zap.Any("config", zpe.config))
-	zpe.server = http.Server{Handler: zPagesMux}
-	zpe.stopCh = make(chan struct{})
-	go func() {
-		defer close(zpe.stopCh)
-
-		if err := zpe.server.Serve(ln); err != nil && err != http.ErrServerClosed {
-			host.ReportFatalError(err)
-		}
-	}()
-
+func (zpe *zpagesExtension) Start(ctx context.Context, host component.Host) error {
 	return nil
 }
 
-func (zpe *zpagesExtension) Shutdown(context.Context) error {
-	err := zpe.server.Close()
-	if zpe.stopCh != nil {
-		<-zpe.stopCh
-	}
-	return err
+func (zpe *zpagesExtension) Shutdown(ctx context.Context) error {
+	return nil
 }
 
-func newServer(config Config, logger *zap.Logger) *zpagesExtension {
-	return &zpagesExtension{
-		config: config,
-		logger: logger,
-	}
+func (zpe *zpagesExtension) RegisterDebug(mux *http.ServeMux) {
+	zpages.Handle(mux, "/")
+}
+
+func newServer() *zpagesExtension {
+	return &zpagesExtension{}
 }
