@@ -24,6 +24,7 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/consumer/consumererror"
+	"go.opentelemetry.io/collector/extension/zpagesextension"
 	"go.opentelemetry.io/collector/service/internal/builder"
 )
 
@@ -34,7 +35,7 @@ type service struct {
 	config            *config.Config
 	logger            *zap.Logger
 	asyncErrorChannel chan error
-	status *status
+	status            *status
 
 	builtExporters  builder.Exporters
 	builtReceivers  builder.Receivers
@@ -80,19 +81,31 @@ func (srv *service) Start(ctx context.Context) error {
 	}
 
 	if srv.status != nil {
-		debugMux := http.NewServeMux()
+		mux := http.NewServeMux()
+		zpagesType := zpagesextension.NewFactory().Type()
+		var zpagesMux *http.ServeMux
 
 		for component, extension := range srv.builtExtensions.ToMap() {
-			if handler, ok := extension.(registerDebug); ok {
+			if handler, ok := extension.(interface {
+				Handler() http.Handler
+			}); ok {
 				srv.logger.Info("Registering component to debug mux", zap.Stringer("component", component))
-				handler.RegisterDebug(debugMux)
+
+				extensionMux := handler.Handler()
+
+				if component.Type() == zpagesType {
+					zpagesMux, _ = extensionMux.(*http.ServeMux)
+				}
+
+				extensionPath := fmt.Sprintf("/extensions/%s/_", component.String())
+				mux.Handle(extensionPath+"/", http.StripPrefix(extensionPath, extensionMux))
 			}
 		}
 
-		srv.RegisterDebug(debugMux)
-
-		mux := http.NewServeMux()
-		mux.Handle("/debug/", http.StripPrefix("/debug", debugMux))
+		if zpagesMux != nil {
+			srv.registerZpages(zpagesMux)
+			mux.Handle("/debug/", http.StripPrefix("/debug", zpagesMux))
+		}
 
 		if err := srv.status.start(mux); err != nil {
 			return err

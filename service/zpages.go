@@ -30,7 +30,7 @@ const (
 	zExtensionName = "zextensionname"
 )
 
-func (srv *service) RegisterDebug(mux *http.ServeMux) {
+func (srv *service) registerZpages(mux *http.ServeMux) {
 	mux.HandleFunc("/"+servicezPath, srv.handleServicezRequest)
 	mux.HandleFunc("/"+pipelinezPath, srv.handlePipelinezRequest)
 	mux.HandleFunc("/"+extensionzPath, func(w http.ResponseWriter, r *http.Request) {

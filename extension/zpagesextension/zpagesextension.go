@@ -34,8 +34,10 @@ func (zpe *zpagesExtension) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (zpe *zpagesExtension) RegisterDebug(mux *http.ServeMux) {
+func (zpe *zpagesExtension) Handler() http.Handler {
+	mux := http.NewServeMux()
 	zpages.Handle(mux, "/")
+	return mux
 }
 
 func newServer() *zpagesExtension {
